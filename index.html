@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Weed Sales Tracker</title>
-    <link rel="manifest" href="manifest.json">
+    <title>Weed Inventory & Sales Tracker</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
             margin: 0;
@@ -18,6 +18,8 @@
             --secondary: #4a7c3a;
             --light: #f5f5f5;
             --dark: #333;
+            --warning: #e74c3c;
+            --success: #27ae60;
         }
         
         body {
@@ -25,90 +27,111 @@
             color: var(--dark);
             line-height: 1.6;
             padding: 10px;
+            background: linear-gradient(135deg, #f5f5f5 0%, #e8f5e8 100%);
+            min-height: 100vh;
         }
         
         .container {
             max-width: 500px;
             margin: 0 auto;
             background-color: white;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
             overflow: hidden;
         }
         
         header {
-            background-color: var(--primary);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
             color: white;
-            padding: 15px;
+            padding: 20px 15px;
             text-align: center;
             position: relative;
         }
         
         h1 {
-            font-size: 1.5rem;
+            font-size: 1.8rem;
             margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
         }
         
         .subtitle {
             font-size: 0.9rem;
-            opacity: 0.8;
+            opacity: 0.9;
         }
         
         .menu-btn {
             position: absolute;
             right: 15px;
-            top: 15px;
-            background: none;
+            top: 20px;
+            background: rgba(255,255,255,0.2);
             border: none;
             color: white;
             font-size: 1.2rem;
             cursor: pointer;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
         .stats {
             display: flex;
             justify-content: space-between;
             padding: 15px;
-            background-color: var(--secondary);
+            background: linear-gradient(135deg, var(--secondary) 0%, #5a9c4a 100%);
             color: white;
         }
         
         .stat-box {
             text-align: center;
             flex: 1;
+            padding: 5px;
         }
         
         .stat-value {
-            font-size: 1.5rem;
+            font-size: 1.4rem;
             font-weight: bold;
+            margin-bottom: 5px;
         }
         
         .stat-label {
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             opacity: 0.9;
         }
         
         .tabs {
             display: flex;
             background-color: #e9e9e9;
+            border-bottom: 1px solid #ddd;
         }
         
         .tab {
             flex: 1;
-            padding: 12px;
+            padding: 15px 5px;
             text-align: center;
             cursor: pointer;
             border-bottom: 3px solid transparent;
+            font-weight: 500;
+            transition: all 0.3s;
+            font-size: 0.9rem;
         }
         
         .tab.active {
             border-bottom: 3px solid var(--primary);
             font-weight: bold;
+            color: var(--primary);
+            background-color: white;
         }
         
         .tab-content {
             display: none;
-            padding: 15px;
+            padding: 20px;
+            min-height: 400px;
         }
         
         .tab-content.active {
@@ -116,101 +139,159 @@
         }
         
         .form-group {
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
         
         label {
             display: block;
-            margin-bottom: 5px;
-            font-weight: 500;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #444;
         }
         
         input, select {
             width: 100%;
-            padding: 10px;
+            padding: 12px 15px;
             border: 1px solid #ddd;
-            border-radius: 5px;
+            border-radius: 8px;
             font-size: 1rem;
+            transition: border 0.3s;
         }
         
-        .price-options {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
+        input:focus, select:focus {
+            border-color: var(--secondary);
+            outline: none;
+        }
+        
+        .strain-options {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
             margin-top: 10px;
         }
         
-        .price-option {
-            flex: 1;
-            min-width: 80px;
-            text-align: center;
-            padding: 10px;
-            background-color: #f0f0f0;
-            border-radius: 5px;
+        .strain-option {
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 10px;
             cursor: pointer;
             transition: all 0.3s;
+            border: 2px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
         
-        .price-option.active {
-            background-color: var(--secondary);
-            color: white;
+        .strain-option.active {
+            background-color: #e8f5e8;
+            border-color: var(--secondary);
+        }
+        
+        .strain-info {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .strain-name {
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: var(--dark);
+        }
+        
+        .strain-details {
+            font-size: 0.85rem;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .strain-price {
+            font-weight: bold;
+            color: var(--primary);
+            font-size: 1.1rem;
         }
         
         button {
             width: 100%;
-            padding: 12px;
-            background-color: var(--primary);
+            padding: 15px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
             color: white;
             border: none;
-            border-radius: 5px;
-            font-size: 1rem;
+            border-radius: 8px;
+            font-size: 1.1rem;
             font-weight: bold;
             cursor: pointer;
-            transition: background-color 0.3s;
+            transition: all 0.3s;
+            box-shadow: 0 3px 5px rgba(0,0,0,0.1);
         }
         
         button:hover {
-            background-color: #1e3f1a;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 10px rgba(0,0,0,0.15);
+        }
+        
+        button:active {
+            transform: translateY(0);
         }
         
         .btn-secondary {
-            background-color: #6c757d;
+            background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
         }
         
-        .btn-secondary:hover {
-            background-color: #545b62;
+        .btn-warning {
+            background: linear-gradient(135deg, var(--warning) 0%, #c0392b 100%);
         }
         
         .sales-list {
             max-height: 300px;
             overflow-y: auto;
+            margin-bottom: 20px;
+            border: 1px solid #eee;
+            border-radius: 10px;
+            padding: 10px;
         }
         
         .sales-header {
-            display: flex;
-            justify-content: space-between;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
             margin-bottom: 10px;
             font-weight: bold;
+            padding: 0 10px 10px;
             border-bottom: 1px solid #eee;
-            padding-bottom: 5px;
+            font-size: 0.9rem;
+            color: #666;
         }
         
         .sale-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 10px 0;
-            border-bottom: 1px solid #f0f0f0;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            padding: 12px 10px;
+            border-bottom: 1px solid #f5f5f5;
+            font-size: 0.9rem;
+        }
+        
+        .sale-item:last-child {
+            border-bottom: none;
+        }
+        
+        .sale-strain {
+            font-weight: 500;
         }
         
         .sale-date {
             font-size: 0.8rem;
-            color: #777;
+            color: #888;
         }
         
         .empty-state {
             text-align: center;
-            padding: 20px;
+            padding: 30px 20px;
             color: #777;
+        }
+        
+        .empty-state i {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            color: #ccc;
         }
         
         footer {
@@ -232,14 +313,26 @@
             z-index: 1000;
             justify-content: center;
             align-items: center;
+            padding: 20px;
         }
         
         .modal-content {
             background-color: white;
-            padding: 20px;
-            border-radius: 10px;
-            width: 90%;
+            padding: 25px;
+            border-radius: 15px;
+            width: 100%;
             max-width: 400px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+        
+        .modal h3 {
+            margin-bottom: 15px;
+            color: var(--dark);
+        }
+        
+        .modal p {
+            margin-bottom: 20px;
+            color: #666;
         }
         
         .modal-buttons {
@@ -252,9 +345,65 @@
             flex: 1;
         }
         
+        .inventory-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--secondary);
+        }
+        
+        .inventory-info h4 {
+            margin-bottom: 5px;
+            color: var(--dark);
+        }
+        
+        .inventory-details {
+            font-size: 0.85rem;
+            color: #666;
+        }
+        
+        .inventory-stock {
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: var(--primary);
+        }
+        
+        .low-stock {
+            color: var(--warning);
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--success);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            z-index: 1100;
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from { top: -100px; opacity: 0; }
+            to { top: 20px; opacity: 1; }
+        }
+        
         @media (max-width: 400px) {
-            .price-options {
-                flex-direction: column;
+            .tab {
+                padding: 12px 5px;
+                font-size: 0.8rem;
+            }
+            
+            .strain-option {
+                padding: 12px;
             }
             
             .modal-buttons {
@@ -266,9 +415,11 @@
 <body>
     <div class="container">
         <header>
-            <h1>Weed Sales Tracker</h1>
-            <div class="subtitle">Track your sales and profits</div>
-            <button class="menu-btn" id="menu-btn">☰</button>
+            <h1><i class="fas fa-cannabis"></i> Weed Tracker Pro</h1>
+            <div class="subtitle">Inventory Management & Sales Tracking</div>
+            <button class="menu-btn" id="menu-btn">
+                <i class="fas fa-bars"></i>
+            </button>
         </header>
         
         <div class="stats">
@@ -287,64 +438,113 @@
         </div>
         
         <div class="tabs">
-            <div class="tab active" data-tab="add-sale">Add Sale</div>
+            <div class="tab active" data-tab="sell">Sell Product</div>
+            <div class="tab" data-tab="inventory">Inventory</div>
             <div class="tab" data-tab="sales-history">Sales History</div>
-            <div class="tab" data-tab="settings">Settings</div>
         </div>
         
-        <div class="tab-content active" id="add-sale-tab">
-            <div class="sales-form">
-                <div class="form-group">
-                    <label for="quantity">Quantity (grams)</label>
-                    <input type="number" id="quantity" min="1" value="1">
-                </div>
-                
-                <div class="form-group">
-                    <label>Price per gram</label>
-                    <div class="price-options">
-                        <div class="price-option active" data-price="10">R10</div>
-                        <div class="price-option" data-price="30">R30</div>
-                        <div class="price-option" data-price="50">R50</div>
-                        <div class="price-option" data-price="100">R100</div>
-                        <div class="price-option" data-price="150">R150</div>
+        <div class="tab-content active" id="sell-tab">
+            <div class="form-group">
+                <label for="strain-select">Select Strain</label>
+                <div class="strain-options">
+                    <div class="strain-option active" data-strain="gorilla-glue">
+                        <div class="strain-info">
+                            <div class="strain-name">Gorilla Glue</div>
+                            <div class="strain-details">Cost: R35/g | Sell: R60/g</div>
+                        </div>
+                        <div class="strain-price">R60/g</div>
+                    </div>
+                    <div class="strain-option" data-strain="skunk">
+                        <div class="strain-info">
+                            <div class="strain-name">Skunk</div>
+                            <div class="strain-details">Cost: R1.5/g | Sell: R10/2g</div>
+                        </div>
+                        <div class="strain-price">R10/2g</div>
+                    </div>
+                    <div class="strain-option" data-strain="premium">
+                        <div class="strain-info">
+                            <div class="strain-name">Premium</div>
+                            <div class="strain-details">Cost: R30/g | Sell: R50/g</div>
+                        </div>
+                        <div class="strain-price">R50/g</div>
                     </div>
                 </div>
-                
-                <button id="add-sale">Add Sale</button>
+            </div>
+            
+            <div class="form-group">
+                <label for="quantity">Quantity (grams)</label>
+                <input type="number" id="quantity" min="1" value="1">
+            </div>
+            
+            <div class="form-group">
+                <label for="selling-price">Selling Price (R)</label>
+                <input type="number" id="selling-price" min="1" value="60" readonly>
+            </div>
+            
+            <button id="add-sale">
+                <i class="fas fa-cash-register"></i> Record Sale
+            </button>
+        </div>
+        
+        <div class="tab-content" id="inventory-tab">
+            <h3 style="margin-bottom: 15px; color: var(--dark);">Current Inventory</h3>
+            <div id="inventory-container">
+                <div class="inventory-item">
+                    <div class="inventory-info">
+                        <h4>Gorilla Glue</h4>
+                        <div class="inventory-details">Cost: R35/g | Sell: R60/g</div>
+                    </div>
+                    <div class="inventory-stock" id="gg-stock">500g</div>
+                </div>
+                <div class="inventory-item">
+                    <div class="inventory-info">
+                        <h4>Skunk</h4>
+                        <div class="inventory-details">Cost: R1.5/g | Sell: R10/2g</div>
+                    </div>
+                    <div class="inventory-stock" id="skunk-stock">1000g</div>
+                </div>
+                <div class="inventory-item">
+                    <div class="inventory-info">
+                        <h4>Premium</h4>
+                        <div class="inventory-details">Cost: R30/g | Sell: R50/g</div>
+                    </div>
+                    <div class="inventory-stock" id="premium-stock">300g</div>
+                </div>
+            </div>
+            
+            <div class="modal-buttons" style="margin-top: 20px;">
+                <button id="restock-btn" class="btn-secondary">
+                    <i class="fas fa-boxes"></i> Restock Inventory
+                </button>
             </div>
         </div>
         
         <div class="tab-content" id="sales-history-tab">
             <div class="sales-list">
                 <div class="sales-header">
-                    <span>Date</span>
-                    <span>Amount</span>
+                    <span>Product</span>
+                    <span>Quantity</span>
                     <span>Revenue</span>
                 </div>
                 <div id="sales-container">
-                    <div class="empty-state">No sales recorded yet</div>
+                    <div class="empty-state">
+                        <i class="fas fa-receipt"></i>
+                        <p>No sales recorded yet</p>
+                    </div>
                 </div>
             </div>
-            <div class="modal-buttons" style="margin-top: 15px;">
-                <button id="export-data" class="btn-secondary">Export Data</button>
-                <button id="clear-data" class="btn-secondary">Clear All</button>
+            <div class="modal-buttons">
+                <button id="export-data" class="btn-secondary">
+                    <i class="fas fa-file-export"></i> Export Data
+                </button>
+                <button id="clear-data" class="btn-warning">
+                    <i class="fas fa-trash"></i> Clear All
+                </button>
             </div>
-        </div>
-        
-        <div class="tab-content" id="settings-tab">
-            <div class="form-group">
-                <label for="profit-margin">Profit Margin (%)</label>
-                <input type="number" id="profit-margin" min="1" max="100" value="50">
-            </div>
-            <div class="form-group">
-                <label for="business-name">Business Name</label>
-                <input type="text" id="business-name" placeholder="Enter your business name">
-            </div>
-            <button id="save-settings">Save Settings</button>
         </div>
         
         <footer>
-            Weed Sales Tracker &copy; 2023
+            Weed Tracker Pro &copy; 2023 | Designed for Mobile Use
         </footer>
     </div>
 
@@ -354,25 +554,53 @@
             <h3>Clear All Data?</h3>
             <p>This action cannot be undone. All sales records will be permanently deleted.</p>
             <div class="modal-buttons">
-                <button id="confirm-clear" class="btn-secondary">Yes, Clear All</button>
+                <button id="confirm-clear" class="btn-warning">Yes, Clear All</button>
                 <button id="cancel-clear">Cancel</button>
             </div>
         </div>
     </div>
 
+    <div class="modal" id="restock-modal">
+        <div class="modal-content">
+            <h3>Restock Inventory</h3>
+            <div class="form-group">
+                <label for="restock-strain">Select Strain</label>
+                <select id="restock-strain">
+                    <option value="gorilla-glue">Gorilla Glue</option>
+                    <option value="skunk">Skunk</option>
+                    <option value="premium">Premium</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="restock-quantity">Quantity (grams)</label>
+                <input type="number" id="restock-quantity" min="1" value="100">
+            </div>
+            <div class="modal-buttons">
+                <button id="confirm-restock" class="btn-secondary">Restock</button>
+                <button id="cancel-restock">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="notification" id="notification">
+        Sale recorded successfully!
+    </div>
+
     <script>
         // Initialize data from localStorage
         let sales = JSON.parse(localStorage.getItem('weedSales')) || [];
-        let settings = JSON.parse(localStorage.getItem('weedSettings')) || {
-            profitMargin: 50,
-            businessName: ''
+        let inventory = JSON.parse(localStorage.getItem('weedInventory')) || {
+            "gorilla-glue": { name: "Gorilla Glue", stock: 500, cost: 35, price: 60 },
+            "skunk": { name: "Skunk", stock: 1000, cost: 1.5, price: 5 }, // R10 for 2g = R5/g
+            "premium": { name: "Premium", stock: 300, cost: 30, price: 50 }
         };
         
-        let selectedPrice = 10;
+        let selectedStrain = "gorilla-glue";
         
         // DOM Elements
+        const strainOptions = document.querySelectorAll('.strain-option');
         const quantityInput = document.getElementById('quantity');
-        const priceOptions = document.querySelectorAll('.price-option');
+        const sellingPriceInput = document.getElementById('selling-price');
         const addSaleButton = document.getElementById('add-sale');
         const salesContainer = document.getElementById('sales-container');
         const totalSalesElement = document.getElementById('total-sales');
@@ -380,24 +608,47 @@
         const totalProfitElement = document.getElementById('total-profit');
         const tabs = document.querySelectorAll('.tab');
         const tabContents = document.querySelectorAll('.tab-content');
-        const profitMarginInput = document.getElementById('profit-margin');
-        const businessNameInput = document.getElementById('business-name');
-        const saveSettingsButton = document.getElementById('save-settings');
         const exportButton = document.getElementById('export-data');
         const clearButton = document.getElementById('clear-data');
         const clearModal = document.getElementById('clear-modal');
         const confirmClearButton = document.getElementById('confirm-clear');
         const cancelClearButton = document.getElementById('cancel-clear');
-        const menuButton = document.getElementById('menu-btn');
+        const restockButton = document.getElementById('restock-btn');
+        const restockModal = document.getElementById('restock-modal');
+        const confirmRestockButton = document.getElementById('confirm-restock');
+        const cancelRestockButton = document.getElementById('cancel-restock');
+        const restockStrainSelect = document.getElementById('restock-strain');
+        const restockQuantityInput = document.getElementById('restock-quantity');
+        const notification = document.getElementById('notification');
         
-        // Set up price option selection
-        priceOptions.forEach(option => {
+        // Strain selection
+        strainOptions.forEach(option => {
             option.addEventListener('click', () => {
-                priceOptions.forEach(opt => opt.classList.remove('active'));
+                strainOptions.forEach(opt => opt.classList.remove('active'));
                 option.classList.add('active');
-                selectedPrice = parseInt(option.getAttribute('data-price'));
+                selectedStrain = option.getAttribute('data-strain');
+                updateSellingPrice();
             });
         });
+        
+        // Update selling price based on selected strain
+        function updateSellingPrice() {
+            if (selectedStrain === "skunk") {
+                // Special pricing for Skunk: R10 for 2g
+                sellingPriceInput.value = 10;
+                document.querySelector('label[for="quantity"]').textContent = "Quantity (2g packs)";
+                quantityInput.min = 2;
+                quantityInput.step = 2;
+                if (quantityInput.value % 2 !== 0) {
+                    quantityInput.value = Math.max(2, Math.ceil(quantityInput.value / 2) * 2);
+                }
+            } else {
+                document.querySelector('label[for="quantity"]').textContent = "Quantity (grams)";
+                quantityInput.min = 1;
+                quantityInput.step = 1;
+                sellingPriceInput.value = inventory[selectedStrain].price;
+            }
+        }
         
         // Tab switching
         tabs.forEach(tab => {
@@ -415,60 +666,86 @@
                         content.classList.add('active');
                     }
                 });
+                
+                // Update inventory display when switching to inventory tab
+                if (tabId === 'inventory') {
+                    updateInventoryDisplay();
+                }
             });
         });
         
         // Add sale event
         addSaleButton.addEventListener('click', () => {
-            const quantity = parseInt(quantityInput.value);
+            let quantity = parseInt(quantityInput.value);
             
             if (isNaN(quantity) || quantity <= 0) {
-                alert('Please enter a valid quantity');
+                showNotification("Please enter a valid quantity", "error");
                 return;
             }
             
-            const revenue = quantity * selectedPrice;
-            const profit = revenue * (settings.profitMargin / 100);
+            // For Skunk, quantity must be in multiples of 2g
+            if (selectedStrain === "skunk" && quantity % 2 !== 0) {
+                showNotification("Skunk must be sold in 2g increments", "error");
+                return;
+            }
             
+            const strain = inventory[selectedStrain];
+            const pricePerUnit = selectedStrain === "skunk" ? 10 : strain.price;
+            const units = selectedStrain === "skunk" ? quantity / 2 : quantity;
+            const revenue = units * pricePerUnit;
+            const cost = units * strain.cost;
+            const profit = revenue - cost;
+            
+            // Check if enough stock is available
+            if (strain.stock < quantity) {
+                showNotification(`Not enough stock! Only ${strain.stock}g available`, "error");
+                return;
+            }
+            
+            // Create sale object
             const sale = {
                 id: Date.now(),
                 date: new Date().toLocaleDateString(),
                 time: new Date().toLocaleTimeString(),
+                strain: selectedStrain,
+                strainName: strain.name,
                 quantity: quantity,
-                price: selectedPrice,
                 revenue: revenue,
                 profit: profit
             };
             
-            sales.unshift(sale);
-            localStorage.setItem('weedSales', JSON.stringify(sales));
+            // Update inventory
+            inventory[selectedStrain].stock -= quantity;
             
+            // Add to sales array
+            sales.unshift(sale);
+            
+            // Save to localStorage
+            localStorage.setItem('weedSales', JSON.stringify(sales));
+            localStorage.setItem('weedInventory', JSON.stringify(inventory));
+            
+            // Update UI
             updateStats();
             renderSales();
-            quantityInput.value = 1;
-        });
-        
-        // Save settings
-        saveSettingsButton.addEventListener('click', () => {
-            settings.profitMargin = parseInt(profitMarginInput.value) || 50;
-            settings.businessName = businessNameInput.value;
+            updateInventoryDisplay();
             
-            localStorage.setItem('weedSettings', JSON.stringify(settings));
-            updateStats(); // Recalculate with new profit margin
+            // Show success notification
+            showNotification("Sale recorded successfully!");
             
-            alert('Settings saved successfully!');
+            // Reset form
+            quantityInput.value = selectedStrain === "skunk" ? 2 : 1;
         });
         
         // Export data
         exportButton.addEventListener('click', () => {
             if (sales.length === 0) {
-                alert('No data to export');
+                showNotification("No data to export", "error");
                 return;
             }
             
-            let csv = 'Date,Time,Quantity (g),Price (R/g),Revenue (R),Profit (R)\n';
+            let csv = 'Date,Time,Strain,Quantity (g),Revenue (R),Profit (R)\n';
             sales.forEach(sale => {
-                csv += `${sale.date},${sale.time},${sale.quantity},${sale.price},${sale.revenue},${sale.profit}\n`;
+                csv += `${sale.date},${sale.time},${sale.strainName},${sale.quantity},${sale.revenue},${sale.profit}\n`;
             });
             
             const blob = new Blob([csv], { type: 'text/csv' });
@@ -480,6 +757,8 @@
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
+            
+            showNotification("Data exported successfully!");
         });
         
         // Clear data modal
@@ -493,16 +772,48 @@
             updateStats();
             renderSales();
             clearModal.style.display = 'none';
+            showNotification("All sales data cleared");
         });
         
         cancelClearButton.addEventListener('click', () => {
             clearModal.style.display = 'none';
         });
         
-        // Menu button (for future features)
-        menuButton.addEventListener('click', () => {
-            alert('Menu feature coming soon!');
+        // Restock modal
+        restockButton.addEventListener('click', () => {
+            restockModal.style.display = 'flex';
         });
+        
+        confirmRestockButton.addEventListener('click', () => {
+            const strain = restockStrainSelect.value;
+            const quantity = parseInt(restockQuantityInput.value);
+            
+            if (isNaN(quantity) || quantity <= 0) {
+                showNotification("Please enter a valid quantity", "error");
+                return;
+            }
+            
+            inventory[strain].stock += quantity;
+            localStorage.setItem('weedInventory', JSON.stringify(inventory));
+            updateInventoryDisplay();
+            restockModal.style.display = 'none';
+            showNotification(`Restocked ${quantity}g of ${inventory[strain].name}`);
+        });
+        
+        cancelRestockButton.addEventListener('click', () => {
+            restockModal.style.display = 'none';
+        });
+        
+        // Show notification
+        function showNotification(message, type = "success") {
+            notification.textContent = message;
+            notification.style.backgroundColor = type === "error" ? "var(--warning)" : "var(--success)";
+            notification.style.display = 'block';
+            
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 3000);
+        }
         
         // Update statistics
         function updateStats() {
@@ -518,7 +829,12 @@
         // Render sales list
         function renderSales() {
             if (sales.length === 0) {
-                salesContainer.innerHTML = '<div class="empty-state">No sales recorded yet</div>';
+                salesContainer.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-receipt"></i>
+                        <p>No sales recorded yet</p>
+                    </div>
+                `;
                 return;
             }
             
@@ -528,10 +844,7 @@
                 const saleElement = document.createElement('div');
                 saleElement.className = 'sale-item';
                 saleElement.innerHTML = `
-                    <div>
-                        <div>${sale.date}</div>
-                        <div class="sale-date">${sale.time}</div>
-                    </div>
+                    <div class="sale-strain">${sale.strainName}</div>
                     <div>${sale.quantity}g</div>
                     <div>R${sale.revenue}</div>
                 `;
@@ -539,24 +852,33 @@
             });
         }
         
-        // Load settings
-        function loadSettings() {
-            profitMarginInput.value = settings.profitMargin;
-            businessNameInput.value = settings.businessName;
+        // Update inventory display
+        function updateInventoryDisplay() {
+            document.getElementById('gg-stock').textContent = `${inventory['gorilla-glue'].stock}g`;
+            document.getElementById('skunk-stock').textContent = `${inventory['skunk'].stock}g`;
+            document.getElementById('premium-stock').textContent = `${inventory['premium'].stock}g`;
             
-            if (settings.businessName) {
-                document.querySelector('h1').textContent = `${settings.businessName} Sales`;
-            }
+            // Highlight low stock items
+            Object.keys(inventory).forEach(strain => {
+                const stockElement = document.getElementById(`${strain.replace('-', '')}-stock`);
+                if (inventory[strain].stock < 100) {
+                    stockElement.classList.add('low-stock');
+                } else {
+                    stockElement.classList.remove('low-stock');
+                }
+            });
         }
         
         // Initialize the app
         function init() {
             updateStats();
             renderSales();
-            loadSettings();
+            updateInventoryDisplay();
+            updateSellingPrice();
         }
         
         document.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
+</html>
 </html>
