@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Weed Inventory & Sales Tracker</title>
+    <title>Weed Business Tracker</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -20,6 +20,8 @@
             --dark: #333;
             --warning: #e74c3c;
             --success: #27ae60;
+            --purple: #8e44ad;
+            --blue: #3498db;
         }
         
         body {
@@ -108,6 +110,7 @@
             display: flex;
             background-color: #e9e9e9;
             border-bottom: 1px solid #ddd;
+            overflow-x: auto;
         }
         
         .tab {
@@ -119,6 +122,7 @@
             font-weight: 500;
             transition: all 0.3s;
             font-size: 0.9rem;
+            min-width: 120px;
         }
         
         .tab.active {
@@ -163,14 +167,28 @@
             outline: none;
         }
         
-        .strain-options {
+        .category-section {
+            margin-bottom: 25px;
+        }
+        
+        .category-title {
+            font-size: 1.2rem;
+            color: var(--primary);
+            margin-bottom: 15px;
+            padding-bottom: 5px;
+            border-bottom: 2px solid #eee;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .product-options {
             display: grid;
             grid-template-columns: 1fr;
             gap: 12px;
-            margin-top: 10px;
         }
         
-        .strain-option {
+        .product-option {
             padding: 15px;
             background-color: #f9f9f9;
             border-radius: 10px;
@@ -182,32 +200,35 @@
             align-items: center;
         }
         
-        .strain-option.active {
+        .product-option.active {
             background-color: #e8f5e8;
             border-color: var(--secondary);
         }
         
-        .strain-info {
+        .product-info {
             display: flex;
             flex-direction: column;
+            flex: 1;
         }
         
-        .strain-name {
+        .product-name {
             font-weight: bold;
             font-size: 1.1rem;
             color: var(--dark);
         }
         
-        .strain-details {
+        .product-details {
             font-size: 0.85rem;
             color: #666;
             margin-top: 5px;
         }
         
-        .strain-price {
+        .product-price {
             font-weight: bold;
             color: var(--primary);
             font-size: 1.1rem;
+            text-align: right;
+            min-width: 80px;
         }
         
         button {
@@ -239,6 +260,14 @@
         
         .btn-warning {
             background: linear-gradient(135deg, var(--warning) 0%, #c0392b 100%);
+        }
+        
+        .btn-purple {
+            background: linear-gradient(135deg, var(--purple) 0%, #6c3483 100%);
+        }
+        
+        .btn-blue {
+            background: linear-gradient(135deg, var(--blue) 0%, #2980b9 100%);
         }
         
         .sales-list {
@@ -273,7 +302,7 @@
             border-bottom: none;
         }
         
-        .sale-strain {
+        .sale-product {
             font-weight: 500;
         }
         
@@ -391,6 +420,21 @@
             animation: slideIn 0.3s ease;
         }
         
+        .inventory-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .inventory-controls input {
+            flex: 1;
+        }
+        
+        .inventory-controls button {
+            width: auto;
+            padding: 10px 15px;
+        }
+        
         @keyframes slideIn {
             from { top: -100px; opacity: 0; }
             to { top: 20px; opacity: 1; }
@@ -400,13 +444,18 @@
             .tab {
                 padding: 12px 5px;
                 font-size: 0.8rem;
+                min-width: 100px;
             }
             
-            .strain-option {
+            .product-option {
                 padding: 12px;
             }
             
             .modal-buttons {
+                flex-direction: column;
+            }
+            
+            .inventory-controls {
                 flex-direction: column;
             }
         }
@@ -415,8 +464,8 @@
 <body>
     <div class="container">
         <header>
-            <h1><i class="fas fa-cannabis"></i> Weed Tracker Pro</h1>
-            <div class="subtitle">Inventory Management & Sales Tracking</div>
+            <h1><i class="fas fa-cannabis"></i> Weed Business Tracker</h1>
+            <div class="subtitle">Complete Inventory & Sales Management</div>
             <button class="menu-btn" id="menu-btn">
                 <i class="fas fa-bars"></i>
             </button>
@@ -424,8 +473,8 @@
         
         <div class="stats">
             <div class="stat-box">
-                <div class="stat-value" id="total-sales">0g</div>
-                <div class="stat-label">Total Sold</div>
+                <div class="stat-value" id="total-sales">0</div>
+                <div class="stat-label">Total Units Sold</div>
             </div>
             <div class="stat-box">
                 <div class="stat-value" id="total-revenue">R0</div>
@@ -441,44 +490,25 @@
             <div class="tab active" data-tab="sell">Sell Product</div>
             <div class="tab" data-tab="inventory">Inventory</div>
             <div class="tab" data-tab="sales-history">Sales History</div>
+            <div class="tab" data-tab="products">Product Catalog</div>
         </div>
         
         <div class="tab-content active" id="sell-tab">
             <div class="form-group">
-                <label for="strain-select">Select Strain</label>
-                <div class="strain-options">
-                    <div class="strain-option active" data-strain="gorilla-glue">
-                        <div class="strain-info">
-                            <div class="strain-name">Gorilla Glue</div>
-                            <div class="strain-details">Cost: R35/g | Sell: R60/g</div>
-                        </div>
-                        <div class="strain-price">R60/g</div>
-                    </div>
-                    <div class="strain-option" data-strain="skunk">
-                        <div class="strain-info">
-                            <div class="strain-name">Skunk</div>
-                            <div class="strain-details">Cost: R1.5/g | Sell: R10/2g</div>
-                        </div>
-                        <div class="strain-price">R10/2g</div>
-                    </div>
-                    <div class="strain-option" data-strain="premium">
-                        <div class="strain-info">
-                            <div class="strain-name">Premium</div>
-                            <div class="strain-details">Cost: R30/g | Sell: R50/g</div>
-                        </div>
-                        <div class="strain-price">R50/g</div>
-                    </div>
+                <label for="product-select">Select Product</label>
+                <div class="product-options" id="product-options">
+                    <!-- Products will be populated by JavaScript -->
                 </div>
             </div>
             
             <div class="form-group">
-                <label for="quantity">Quantity (grams)</label>
+                <label for="quantity">Quantity</label>
                 <input type="number" id="quantity" min="1" value="1">
             </div>
             
             <div class="form-group">
                 <label for="selling-price">Selling Price (R)</label>
-                <input type="number" id="selling-price" min="1" value="60" readonly>
+                <input type="number" id="selling-price" min="1" value="50" readonly>
             </div>
             
             <button id="add-sale">
@@ -489,27 +519,7 @@
         <div class="tab-content" id="inventory-tab">
             <h3 style="margin-bottom: 15px; color: var(--dark);">Current Inventory</h3>
             <div id="inventory-container">
-                <div class="inventory-item">
-                    <div class="inventory-info">
-                        <h4>Gorilla Glue</h4>
-                        <div class="inventory-details">Cost: R35/g | Sell: R60/g</div>
-                    </div>
-                    <div class="inventory-stock" id="gg-stock">500g</div>
-                </div>
-                <div class="inventory-item">
-                    <div class="inventory-info">
-                        <h4>Skunk</h4>
-                        <div class="inventory-details">Cost: R1.5/g | Sell: R10/2g</div>
-                    </div>
-                    <div class="inventory-stock" id="skunk-stock">1000g</div>
-                </div>
-                <div class="inventory-item">
-                    <div class="inventory-info">
-                        <h4>Premium</h4>
-                        <div class="inventory-details">Cost: R30/g | Sell: R50/g</div>
-                    </div>
-                    <div class="inventory-stock" id="premium-stock">300g</div>
-                </div>
+                <!-- Inventory items will be populated by JavaScript -->
             </div>
             
             <div class="modal-buttons" style="margin-top: 20px;">
@@ -543,8 +553,15 @@
             </div>
         </div>
         
+        <div class="tab-content" id="products-tab">
+            <h3 style="margin-bottom: 15px; color: var(--dark);">Product Catalog</h3>
+            <div id="products-container">
+                <!-- Products will be displayed here by JavaScript -->
+            </div>
+        </div>
+        
         <footer>
-            Weed Tracker Pro &copy; 2023 | Designed for Mobile Use
+            Weed Business Tracker &copy; 2023 | Designed for Mobile Use
         </footer>
     </div>
 
@@ -564,20 +581,38 @@
         <div class="modal-content">
             <h3>Restock Inventory</h3>
             <div class="form-group">
-                <label for="restock-strain">Select Strain</label>
-                <select id="restock-strain">
-                    <option value="gorilla-glue">Gorilla Glue</option>
-                    <option value="skunk">Skunk</option>
-                    <option value="premium">Premium</option>
+                <label for="restock-product">Select Product</label>
+                <select id="restock-product">
+                    <!-- Options will be populated by JavaScript -->
                 </select>
             </div>
             <div class="form-group">
-                <label for="restock-quantity">Quantity (grams)</label>
-                <input type="number" id="restock-quantity" min="1" value="100">
+                <label for="restock-quantity">Quantity</label>
+                <input type="number" id="restock-quantity" min="1" value="10">
             </div>
             <div class="modal-buttons">
                 <button id="confirm-restock" class="btn-secondary">Restock</button>
                 <button id="cancel-restock">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="set-inventory-modal">
+        <div class="modal-content">
+            <h3>Set Inventory Stock</h3>
+            <div class="form-group">
+                <label for="set-inventory-product">Select Product</label>
+                <select id="set-inventory-product">
+                    <!-- Options will be populated by JavaScript -->
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="set-inventory-quantity">New Stock Quantity</label>
+                <input type="number" id="set-inventory-quantity" min="0" value="0">
+            </div>
+            <div class="modal-buttons">
+                <button id="confirm-set-inventory" class="btn-blue">Update Stock</button>
+                <button id="cancel-set-inventory">Cancel</button>
             </div>
         </div>
     </div>
@@ -587,18 +622,189 @@
     </div>
 
     <script>
+        // Product catalog with all the products mentioned
+        const productCatalog = {
+            // Flower Strains
+            "gorilla-glue": { 
+                name: "Gorilla Glue", 
+                category: "Flower", 
+                stock: 500, 
+                cost: 35, 
+                price: 60,
+                unit: "g"
+            },
+            "skunk": { 
+                name: "Skunk", 
+                category: "Flower", 
+                stock: 1000, 
+                cost: 1.5, 
+                price: 5, // R10 for 2g = R5/g
+                unit: "g",
+                specialPricing: "R10/2g"
+            },
+            "premium": { 
+                name: "Premium", 
+                category: "Flower", 
+                stock: 300, 
+                cost: 30, 
+                price: 50,
+                unit: "g"
+            },
+            "stunk-slushie": { 
+                name: "Stunk Slushie", 
+                category: "Flower", 
+                stock: 200, 
+                cost: 1500, 
+                price: 2000,
+                unit: "unit",
+                note: "Stock price: R1500"
+            },
+            
+            // Edibles - Lollipops
+            "lollipop": { 
+                name: "Lollipop", 
+                category: "Edibles", 
+                stock: 100, 
+                cost: 25, 
+                price: 50,
+                unit: "unit",
+                note: "Retail: R50"
+            },
+            
+            // Edibles - Popcorn
+            "popcorn": { 
+                name: "Popcorn", 
+                category: "Edibles", 
+                stock: 100, 
+                cost: 20, 
+                price: 40,
+                unit: "unit",
+                note: "Retail: R40"
+            },
+            
+            // Edibles - Stripes
+            "stripes": { 
+                name: "Stripes", 
+                category: "Edibles", 
+                stock: 100, 
+                cost: 10, 
+                price: 20,
+                unit: "unit",
+                note: "Retail: R20"
+            },
+            
+            // Edibles - Gummies
+            "gummies": { 
+                name: "Gummies", 
+                category: "Edibles", 
+                stock: 100, 
+                cost: 10, 
+                price: 20,
+                unit: "unit",
+                note: "Retail: R20"
+            },
+            
+            // Edibles - Spaceman Gummies
+            "spaceman-gummies": { 
+                name: "Spaceman Gummies", 
+                category: "Edibles", 
+                stock: 100, 
+                cost: 25, 
+                price: 50,
+                unit: "unit",
+                note: "Retail: R50"
+            },
+            
+            // Beverages - 420 Energy Drink
+            "420-energy-drink": { 
+                name: "420 Energy Drink", 
+                category: "Beverages", 
+                stock: 100, 
+                cost: 15, 
+                price: 30,
+                unit: "unit",
+                note: "Retail: R30"
+            },
+            
+            // Additional products from the images
+            "bhang-bars": { 
+                name: "BHANG BARS 2g Liquid Diamond", 
+                category: "Concentrates", 
+                stock: 50, 
+                cost: 700, 
+                price: 960,
+                unit: "unit",
+                note: "300 DABS, Portable DAB Rig"
+            },
+            
+            "cookies": { 
+                name: "Cookies", 
+                category: "Edibles", 
+                stock: 60, 
+                cost: 15, 
+                price: 25,
+                unit: "unit",
+                note: "50ml, 60 units"
+            },
+            
+            "chocolates": { 
+                name: "DISCO Chocolates", 
+                category: "Edibles", 
+                stock: 100, 
+                cost: 12, 
+                price: 20,
+                unit: "unit",
+                note: "40mg, 100 units, Jar: R2000"
+            },
+            
+            "fudge": { 
+                name: "Fudge", 
+                category: "Edibles", 
+                stock: 100, 
+                cost: 12, 
+                price: 20,
+                unit: "unit",
+                note: "100 units"
+            },
+            
+            "super-juice-300ml": { 
+                name: "Super Juice 300ml", 
+                category: "Beverages", 
+                stock: 60, 
+                cost: 15, 
+                price: 25,
+                unit: "unit"
+            },
+            
+            "icetree-300ml": { 
+                name: "IceTree Rooibos Tea 300ml", 
+                category: "Beverages", 
+                stock: 60, 
+                cost: 15, 
+                price: 25,
+                unit: "unit",
+                note: "CBD 20mg"
+            },
+            
+            "pot-corn": { 
+                name: "Pot Corn", 
+                category: "Snacks", 
+                stock: 60, 
+                cost: 15, 
+                price: 25,
+                unit: "unit",
+                note: "25g"
+            }
+        };
+
         // Initialize data from localStorage
         let sales = JSON.parse(localStorage.getItem('weedSales')) || [];
-        let inventory = JSON.parse(localStorage.getItem('weedInventory')) || {
-            "gorilla-glue": { name: "Gorilla Glue", stock: 500, cost: 35, price: 60 },
-            "skunk": { name: "Skunk", stock: 1000, cost: 1.5, price: 5 }, // R10 for 2g = R5/g
-            "premium": { name: "Premium", stock: 300, cost: 30, price: 50 }
-        };
+        let inventory = JSON.parse(localStorage.getItem('weedInventory')) || productCatalog;
         
-        let selectedStrain = "gorilla-glue";
+        let selectedProduct = "lollipop";
         
         // DOM Elements
-        const strainOptions = document.querySelectorAll('.strain-option');
+        const productOptionsContainer = document.getElementById('product-options');
         const quantityInput = document.getElementById('quantity');
         const sellingPriceInput = document.getElementById('selling-price');
         const addSaleButton = document.getElementById('add-sale');
@@ -617,25 +823,113 @@
         const restockModal = document.getElementById('restock-modal');
         const confirmRestockButton = document.getElementById('confirm-restock');
         const cancelRestockButton = document.getElementById('cancel-restock');
-        const restockStrainSelect = document.getElementById('restock-strain');
+        const restockProductSelect = document.getElementById('restock-product');
         const restockQuantityInput = document.getElementById('restock-quantity');
+        const setInventoryModal = document.getElementById('set-inventory-modal');
+        const setInventoryProductSelect = document.getElementById('set-inventory-product');
+        const setInventoryQuantityInput = document.getElementById('set-inventory-quantity');
+        const confirmSetInventoryButton = document.getElementById('confirm-set-inventory');
+        const cancelSetInventoryButton = document.getElementById('cancel-set-inventory');
         const notification = document.getElementById('notification');
+        const productsContainer = document.getElementById('products-container');
+        const inventoryContainer = document.getElementById('inventory-container');
         
-        // Strain selection
-        strainOptions.forEach(option => {
-            option.addEventListener('click', () => {
-                strainOptions.forEach(opt => opt.classList.remove('active'));
-                option.classList.add('active');
-                selectedStrain = option.getAttribute('data-strain');
-                updateSellingPrice();
+        // Populate product options
+        function populateProductOptions() {
+            productOptionsContainer.innerHTML = '';
+            
+            // Group products by category
+            const categories = {};
+            Object.keys(inventory).forEach(productId => {
+                const product = inventory[productId];
+                if (!categories[product.category]) {
+                    categories[product.category] = [];
+                }
+                categories[product.category].push({id: productId, ...product});
             });
-        });
+            
+            // Create category sections
+            Object.keys(categories).forEach(category => {
+                const categorySection = document.createElement('div');
+                categorySection.className = 'category-section';
+                
+                const categoryTitle = document.createElement('div');
+                categoryTitle.className = 'category-title';
+                categoryTitle.innerHTML = `<i class="fas ${getCategoryIcon(category)}"></i> ${category}`;
+                categorySection.appendChild(categoryTitle);
+                
+                const productsGrid = document.createElement('div');
+                productsGrid.className = 'product-options';
+                
+                categories[category].forEach(product => {
+                    const productOption = document.createElement('div');
+                    productOption.className = `product-option ${product.id === selectedProduct ? 'active' : ''}`;
+                    productOption.setAttribute('data-product', product.id);
+                    
+                    const productInfo = document.createElement('div');
+                    productInfo.className = 'product-info';
+                    
+                    const productName = document.createElement('div');
+                    productName.className = 'product-name';
+                    productName.textContent = product.name;
+                    
+                    const productDetails = document.createElement('div');
+                    productDetails.className = 'product-details';
+                    productDetails.textContent = `Cost: R${product.cost}/${product.unit} | Sell: R${product.price}/${product.unit}`;
+                    
+                    if (product.note) {
+                        const productNote = document.createElement('div');
+                        productNote.className = 'product-details';
+                        productNote.textContent = product.note;
+                        productNote.style.fontSize = '0.75rem';
+                        productNote.style.color = '#888';
+                        productInfo.appendChild(productNote);
+                    }
+                    
+                    productInfo.appendChild(productName);
+                    productInfo.appendChild(productDetails);
+                    
+                    const productPrice = document.createElement('div');
+                    productPrice.className = 'product-price';
+                    productPrice.textContent = `R${product.price}`;
+                    
+                    productOption.appendChild(productInfo);
+                    productOption.appendChild(productPrice);
+                    
+                    productOption.addEventListener('click', () => {
+                        document.querySelectorAll('.product-option').forEach(opt => opt.classList.remove('active'));
+                        productOption.classList.add('active');
+                        selectedProduct = product.id;
+                        updateSellingPrice();
+                    });
+                    
+                    productsGrid.appendChild(productOption);
+                });
+                
+                categorySection.appendChild(productsGrid);
+                productOptionsContainer.appendChild(categorySection);
+            });
+        }
         
-        // Update selling price based on selected strain
+        // Get appropriate icon for each category
+        function getCategoryIcon(category) {
+            switch(category) {
+                case 'Flower': return 'fa-leaf';
+                case 'Concentrates': return 'fa-fire';
+                case 'Edibles': return 'fa-cookie-bite';
+                case 'Beverages': return 'fa-glass-whiskey';
+                case 'Snacks': return 'fa-popcorn';
+                default: return 'fa-cannabis';
+            }
+        }
+        
+        // Update selling price based on selected product
         function updateSellingPrice() {
-            if (selectedStrain === "skunk") {
-                // Special pricing for Skunk: R10 for 2g
-                sellingPriceInput.value = 10;
+            const product = inventory[selectedProduct];
+            sellingPriceInput.value = product.price;
+            
+            // Special handling for Skunk (sold in 2g increments)
+            if (selectedProduct === "skunk") {
                 document.querySelector('label[for="quantity"]').textContent = "Quantity (2g packs)";
                 quantityInput.min = 2;
                 quantityInput.step = 2;
@@ -643,10 +937,9 @@
                     quantityInput.value = Math.max(2, Math.ceil(quantityInput.value / 2) * 2);
                 }
             } else {
-                document.querySelector('label[for="quantity"]').textContent = "Quantity (grams)";
+                document.querySelector('label[for="quantity"]').textContent = "Quantity";
                 quantityInput.min = 1;
                 quantityInput.step = 1;
-                sellingPriceInput.value = inventory[selectedStrain].price;
             }
         }
         
@@ -667,9 +960,11 @@
                     }
                 });
                 
-                // Update inventory display when switching to inventory tab
+                // Update displays when switching tabs
                 if (tabId === 'inventory') {
                     updateInventoryDisplay();
+                } else if (tabId === 'products') {
+                    displayProductCatalog();
                 }
             });
         });
@@ -684,21 +979,19 @@
             }
             
             // For Skunk, quantity must be in multiples of 2g
-            if (selectedStrain === "skunk" && quantity % 2 !== 0) {
+            if (selectedProduct === "skunk" && quantity % 2 !== 0) {
                 showNotification("Skunk must be sold in 2g increments", "error");
                 return;
             }
             
-            const strain = inventory[selectedStrain];
-            const pricePerUnit = selectedStrain === "skunk" ? 10 : strain.price;
-            const units = selectedStrain === "skunk" ? quantity / 2 : quantity;
-            const revenue = units * pricePerUnit;
-            const cost = units * strain.cost;
+            const product = inventory[selectedProduct];
+            const revenue = quantity * product.price;
+            const cost = quantity * product.cost;
             const profit = revenue - cost;
             
             // Check if enough stock is available
-            if (strain.stock < quantity) {
-                showNotification(`Not enough stock! Only ${strain.stock}g available`, "error");
+            if (product.stock < quantity) {
+                showNotification(`Not enough stock! Only ${product.stock} ${product.unit} available`, "error");
                 return;
             }
             
@@ -707,15 +1000,15 @@
                 id: Date.now(),
                 date: new Date().toLocaleDateString(),
                 time: new Date().toLocaleTimeString(),
-                strain: selectedStrain,
-                strainName: strain.name,
+                product: selectedProduct,
+                productName: product.name,
                 quantity: quantity,
                 revenue: revenue,
                 profit: profit
             };
             
             // Update inventory
-            inventory[selectedStrain].stock -= quantity;
+            inventory[selectedProduct].stock -= quantity;
             
             // Add to sales array
             sales.unshift(sale);
@@ -733,7 +1026,7 @@
             showNotification("Sale recorded successfully!");
             
             // Reset form
-            quantityInput.value = selectedStrain === "skunk" ? 2 : 1;
+            quantityInput.value = selectedProduct === "skunk" ? 2 : 1;
         });
         
         // Export data
@@ -743,9 +1036,9 @@
                 return;
             }
             
-            let csv = 'Date,Time,Strain,Quantity (g),Revenue (R),Profit (R)\n';
+            let csv = 'Date,Time,Product,Quantity,Revenue (R),Profit (R)\n';
             sales.forEach(sale => {
-                csv += `${sale.date},${sale.time},${sale.strainName},${sale.quantity},${sale.revenue},${sale.profit}\n`;
+                csv += `${sale.date},${sale.time},${sale.productName},${sale.quantity},${sale.revenue},${sale.profit}\n`;
             });
             
             const blob = new Blob([csv], { type: 'text/csv' });
@@ -781,11 +1074,21 @@
         
         // Restock modal
         restockButton.addEventListener('click', () => {
+            // Populate restock product select
+            restockProductSelect.innerHTML = '';
+            Object.keys(inventory).forEach(productId => {
+                const product = inventory[productId];
+                const option = document.createElement('option');
+                option.value = productId;
+                option.textContent = product.name;
+                restockProductSelect.appendChild(option);
+            });
+            
             restockModal.style.display = 'flex';
         });
         
         confirmRestockButton.addEventListener('click', () => {
-            const strain = restockStrainSelect.value;
+            const productId = restockProductSelect.value;
             const quantity = parseInt(restockQuantityInput.value);
             
             if (isNaN(quantity) || quantity <= 0) {
@@ -793,15 +1096,52 @@
                 return;
             }
             
-            inventory[strain].stock += quantity;
+            inventory[productId].stock += quantity;
             localStorage.setItem('weedInventory', JSON.stringify(inventory));
             updateInventoryDisplay();
             restockModal.style.display = 'none';
-            showNotification(`Restocked ${quantity}g of ${inventory[strain].name}`);
+            showNotification(`Restocked ${quantity} ${inventory[productId].unit} of ${inventory[productId].name}`);
         });
         
         cancelRestockButton.addEventListener('click', () => {
             restockModal.style.display = 'none';
+        });
+        
+        // Set inventory modal
+        function openSetInventoryModal(productId) {
+            // Populate set inventory product select
+            setInventoryProductSelect.innerHTML = '';
+            Object.keys(inventory).forEach(pId => {
+                const product = inventory[pId];
+                const option = document.createElement('option');
+                option.value = pId;
+                option.textContent = product.name;
+                if (pId === productId) option.selected = true;
+                setInventoryProductSelect.appendChild(option);
+            });
+            
+            setInventoryQuantityInput.value = inventory[productId].stock;
+            setInventoryModal.style.display = 'flex';
+        }
+        
+        confirmSetInventoryButton.addEventListener('click', () => {
+            const productId = setInventoryProductSelect.value;
+            const quantity = parseInt(setInventoryQuantityInput.value);
+            
+            if (isNaN(quantity) || quantity < 0) {
+                showNotification("Please enter a valid quantity", "error");
+                return;
+            }
+            
+            inventory[productId].stock = quantity;
+            localStorage.setItem('weedInventory', JSON.stringify(inventory));
+            updateInventoryDisplay();
+            setInventoryModal.style.display = 'none';
+            showNotification(`Stock updated to ${quantity} ${inventory[productId].unit} for ${inventory[productId].name}`);
+        });
+        
+        cancelSetInventoryButton.addEventListener('click', () => {
+            setInventoryModal.style.display = 'none';
         });
         
         // Show notification
@@ -821,7 +1161,7 @@
             const totalRevenue = sales.reduce((sum, sale) => sum + sale.revenue, 0);
             const totalProfit = sales.reduce((sum, sale) => sum + sale.profit, 0);
             
-            totalSalesElement.textContent = `${totalSales}g`;
+            totalSalesElement.textContent = totalSales;
             totalRevenueElement.textContent = `R${totalRevenue}`;
             totalProfitElement.textContent = `R${totalProfit}`;
         }
@@ -844,8 +1184,8 @@
                 const saleElement = document.createElement('div');
                 saleElement.className = 'sale-item';
                 saleElement.innerHTML = `
-                    <div class="sale-strain">${sale.strainName}</div>
-                    <div>${sale.quantity}g</div>
+                    <div class="sale-product">${sale.productName}</div>
+                    <div>${sale.quantity}</div>
                     <div>R${sale.revenue}</div>
                 `;
                 salesContainer.appendChild(saleElement);
@@ -854,23 +1194,135 @@
         
         // Update inventory display
         function updateInventoryDisplay() {
-            document.getElementById('gg-stock').textContent = `${inventory['gorilla-glue'].stock}g`;
-            document.getElementById('skunk-stock').textContent = `${inventory['skunk'].stock}g`;
-            document.getElementById('premium-stock').textContent = `${inventory['premium'].stock}g`;
+            inventoryContainer.innerHTML = '';
             
-            // Highlight low stock items
-            Object.keys(inventory).forEach(strain => {
-                const stockElement = document.getElementById(`${strain.replace('-', '')}-stock`);
-                if (inventory[strain].stock < 100) {
-                    stockElement.classList.add('low-stock');
-                } else {
-                    stockElement.classList.remove('low-stock');
+            // Group products by category
+            const categories = {};
+            Object.keys(inventory).forEach(productId => {
+                const product = inventory[productId];
+                if (!categories[product.category]) {
+                    categories[product.category] = [];
                 }
+                categories[product.category].push({id: productId, ...product});
+            });
+            
+            // Create category sections
+            Object.keys(categories).forEach(category => {
+                const categoryTitle = document.createElement('div');
+                categoryTitle.className = 'category-title';
+                categoryTitle.innerHTML = `<i class="fas ${getCategoryIcon(category)}"></i> ${category}`;
+                inventoryContainer.appendChild(categoryTitle);
+                
+                categories[category].forEach(product => {
+                    const inventoryItem = document.createElement('div');
+                    inventoryItem.className = 'inventory-item';
+                    
+                    const inventoryInfo = document.createElement('div');
+                    inventoryInfo.className = 'inventory-info';
+                    
+                    const productName = document.createElement('h4');
+                    productName.textContent = product.name;
+                    
+                    const productDetails = document.createElement('div');
+                    productDetails.className = 'inventory-details';
+                    productDetails.textContent = `Cost: R${product.cost}/${product.unit} | Price: R${product.price}/${product.unit}`;
+                    
+                    inventoryInfo.appendChild(productName);
+                    inventoryInfo.appendChild(productDetails);
+                    
+                    const inventoryStock = document.createElement('div');
+                    inventoryStock.className = `inventory-stock ${product.stock < 10 ? 'low-stock' : ''}`;
+                    inventoryStock.textContent = `${product.stock} ${product.unit}`;
+                    inventoryStock.id = `${product.id.replace('-', '')}-stock`;
+                    
+                    const inventoryControls = document.createElement('div');
+                    inventoryControls.className = 'inventory-controls';
+                    
+                    const setStockButton = document.createElement('button');
+                    setStockButton.className = 'btn-blue';
+                    setStockButton.innerHTML = '<i class="fas fa-edit"></i> Set Stock';
+                    setStockButton.addEventListener('click', () => {
+                        openSetInventoryModal(product.id);
+                    });
+                    
+                    inventoryControls.appendChild(setStockButton);
+                    
+                    inventoryItem.appendChild(inventoryInfo);
+                    inventoryItem.appendChild(inventoryStock);
+                    inventoryItem.appendChild(inventoryControls);
+                    
+                    inventoryContainer.appendChild(inventoryItem);
+                });
+            });
+        }
+        
+        // Display product catalog
+        function displayProductCatalog() {
+            productsContainer.innerHTML = '';
+            
+            // Group products by category
+            const categories = {};
+            Object.keys(inventory).forEach(productId => {
+                const product = inventory[productId];
+                if (!categories[product.category]) {
+                    categories[product.category] = [];
+                }
+                categories[product.category].push({id: productId, ...product});
+            });
+            
+            // Create category sections
+            Object.keys(categories).forEach(category => {
+                const categorySection = document.createElement('div');
+                categorySection.className = 'category-section';
+                
+                const categoryTitle = document.createElement('div');
+                categoryTitle.className = 'category-title';
+                categoryTitle.innerHTML = `<i class="fas ${getCategoryIcon(category)}"></i> ${category}`;
+                categorySection.appendChild(categoryTitle);
+                
+                categories[category].forEach(product => {
+                    const productItem = document.createElement('div');
+                    productItem.className = 'inventory-item';
+                    
+                    const productInfo = document.createElement('div');
+                    productInfo.className = 'inventory-info';
+                    
+                    const productName = document.createElement('h4');
+                    productName.textContent = product.name;
+                    
+                    const productDetails = document.createElement('div');
+                    productDetails.className = 'inventory-details';
+                    productDetails.textContent = `Cost: R${product.cost}/${product.unit} | Retail: R${product.price}/${product.unit}`;
+                    
+                    if (product.note) {
+                        const productNote = document.createElement('div');
+                        productNote.className = 'inventory-details';
+                        productNote.textContent = product.note;
+                        productNote.style.fontSize = '0.75rem';
+                        productNote.style.color = '#888';
+                        productInfo.appendChild(productNote);
+                    }
+                    
+                    productInfo.appendChild(productName);
+                    productInfo.appendChild(productDetails);
+                    
+                    const productPrice = document.createElement('div');
+                    productPrice.className = 'inventory-stock';
+                    productPrice.textContent = `R${product.price}`;
+                    
+                    productItem.appendChild(productInfo);
+                    productItem.appendChild(productPrice);
+                    
+                    categorySection.appendChild(productItem);
+                });
+                
+                productsContainer.appendChild(categorySection);
             });
         }
         
         // Initialize the app
         function init() {
+            populateProductOptions();
             updateStats();
             renderSales();
             updateInventoryDisplay();
@@ -880,5 +1332,4 @@
         document.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
-</html>
 </html>
